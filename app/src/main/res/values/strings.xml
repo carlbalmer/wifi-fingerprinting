@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Wifi Fingerprinting</string>
-    <string name="textView1">Hello World!</string>
-    <string name="button1">Click Me!</string>
-    <string name="clickResponse">You Clicked!</string>
+    <string name="textView1">Hello!</string>
+    <string name="button1">Scan</string>
 </resources>

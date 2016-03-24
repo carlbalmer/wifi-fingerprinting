@@ -10,19 +10,28 @@
     tools:context="ch.brogrammers.carl.wififingerprinting.MainActivity">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/textView1"
-        android:textSize="@dimen/textSizeBig"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/textView" />
+        android:textSize="@dimen/textSizeText" />
 
     <Button
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button1"
-        android:textSize="@dimen/textSizeNormal"
-        android:id="@+id/button"
         android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:text="@string/button1"
+        android:textSize="@dimen/textSizeButton" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="41dp"
+        android:text="Label"
+        android:autoText="false" />
 </RelativeLayout>
