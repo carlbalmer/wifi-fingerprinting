@@ -6,12 +6,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,8 +21,9 @@ public class MainActivity extends AppCompatActivity {
     private WifiScanReceiver wifiScanReceiver;
     private ScanResultsFilter scanResultsFilter;
 
+    private Handler handler;
     private int scanCount = 0;
-    private ArrayList<String> results;
+    private boolean isScanning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,25 +32,38 @@ public class MainActivity extends AppCompatActivity {
 
         textView = (TextView) findViewById(R.id.textView);
         toggleButton = (Button) findViewById(R.id.button);
-        results = new ArrayList();
 
         scanResultsFilter = new ScanResultsFilter();
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiScanReceiver = new WifiScanReceiver();
+
+        handler = new Handler();
+
+        scanResultsFilter.addAnchorNode("Berntiger");
+
+        final Runnable scanRepeater = new Runnable() {
+            @Override
+            public void run() {
+                wifiManager.startScan();
+                handler.postDelayed(this, 3000);
+            }
+        };
+
         toggleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (scanCount == 0) {
-                    toggleButton.setText("Scanning...");
-                    wifiManager.startScan();
+                if (isScanning) {
+                    isScanning = false;
+                    toggleButton.setText("SCAN");
+                    handler.removeCallbacks(scanRepeater);
+                } else {
+                    isScanning = true;
+                    handler.post(scanRepeater);
                 }
+
             }
         });
 
-        //scanResultsFilter.addAnchorNode("eduroam");
-        //scanResultsFilter.addAnchorNode("public-unibe");
-        scanResultsFilter.addAnchorNode("UPC0048103");
-        textView.setText(scanResultsFilter.toString());
     }
 
     protected void onPause() {
@@ -70,20 +83,9 @@ public class MainActivity extends AppCompatActivity {
     public class WifiScanReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            scanCount++;
-            toggleButton.setText( "Scan Count: " + Integer.toString(scanCount));
+            toggleButton.setText("Scan Count: " + Integer.toString(scanCount++));
             scanResultsFilter.filterResults(wifiManager.getScanResults());
-            results.add(scanResultsFilter.toString());
             textView.setText(scanResultsFilter.toString());
-            if(results.size()<10){
-                wifiManager.startScan();
-            }
-            else{
-                toggleButton.setText("Scan Finished");
-                textView.setText(results.toString());
-                results.clear();
-                scanCount = 0;
-            }
         }
     }
 }
