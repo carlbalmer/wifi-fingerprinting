@@ -1,30 +1,35 @@
 package ch.brogrammers.carl.wififingerprinting;
 
-import android.content.Context;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Scans for and Tracks the RSSI of a given set of AnchorNodes
  */
-public class ScanResultsFilter {
+public class ScanManager {
 
     private Hashtable<String, AnchorNode> anchorNodes;
+    private final String label;
+    private final int numberOfScans;
+    private int scanCount;
 
-    public ScanResultsFilter() {
-        this.anchorNodes = new Hashtable();
+    public ScanManager(String label, int numberOfScans) {
+        this.label = label;
+        this.numberOfScans = numberOfScans;
+        this.anchorNodes = new Hashtable<>();
+        this.scanCount = 0;
     }
 
-    public void filterResults(List<ScanResult> scanResults){
+    public void addScanResults(List<ScanResult> scanResults){
         for(ScanResult scanResult : scanResults){
             if(anchorNodes.containsKey(scanResult.SSID)){
-                anchorNodes.get(scanResult.SSID).setRssi(scanResult.level);
+                anchorNodes.get(scanResult.SSID).addRssi(scanResult.level);
             }
         }
+        scanCount++;
     }
 
     public void addAnchorNode(String ssid){
@@ -39,6 +44,10 @@ public class ScanResultsFilter {
         return anchorNodes.get(ssid);
     }
 
+    public int getScanCount() {
+        return scanCount;
+    }
+
     @Override
     public String toString() {
         String output = "";
@@ -46,5 +55,13 @@ public class ScanResultsFilter {
             output = output + anchorNodes.get(key) + "\n";
         }
         return output;
+    }
+
+    public boolean enoughResults(){
+        return scanCount >= numberOfScans;
+    }
+
+    public String getLabel() {
+        return label;
     }
 }

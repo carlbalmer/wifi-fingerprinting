@@ -10,20 +10,20 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
-    private Button toggleButton;
+    private Button button;
+    private EditText editText;
 
     private WifiManager wifiManager;
     private WifiScanReceiver wifiScanReceiver;
-    private ScanResultsFilter scanResultsFilter;
+    private ScanManager scanManager;
 
     private Handler handler;
-    private int scanCount = 0;
-    private boolean isScanning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,36 +31,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.textView);
-        toggleButton = (Button) findViewById(R.id.button);
+        button = (Button) findViewById(R.id.button);
+        editText = (EditText) findViewById(R.id.editText);
 
-        scanResultsFilter = new ScanResultsFilter();
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiScanReceiver = new WifiScanReceiver();
+        scanManager = new ScanManager(editText.getText().toString(), 5);
 
         handler = new Handler();
 
-        scanResultsFilter.addAnchorNode("Berntiger");
+        scanManager.addAnchorNode("Berntiger");
+        scanManager.addAnchorNode("UPC0048103");
 
         final Runnable scanRepeater = new Runnable() {
             @Override
             public void run() {
-                wifiManager.startScan();
-                handler.postDelayed(this, 3000);
+                if (!scanManager.enoughResults()) {
+                    wifiManager.startScan();
+                    handler.postDelayed(this, 3000);
+                } else {
+                    textView.setText(scanManager.getLabel());
+                    scanManager = new ScanManager(editText.getText().toString(), 5);
+                }
             }
         };
 
-        toggleButton.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isScanning) {
-                    isScanning = false;
-                    toggleButton.setText("SCAN");
-                    handler.removeCallbacks(scanRepeater);
-                } else {
-                    isScanning = true;
-                    handler.post(scanRepeater);
-                }
-
+                handler.post(scanRepeater);
             }
         });
 
@@ -83,9 +82,9 @@ public class MainActivity extends AppCompatActivity {
     public class WifiScanReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            toggleButton.setText("Scan Count: " + Integer.toString(scanCount++));
-            scanResultsFilter.filterResults(wifiManager.getScanResults());
-            textView.setText(scanResultsFilter.toString());
+            scanManager.addScanResults(wifiManager.getScanResults());
+            textView.setText(scanManager.toString());
+            button.setText("Scan Count: " + Integer.toString(scanManager.getScanCount()));
         }
     }
 }

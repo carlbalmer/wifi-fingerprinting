@@ -3,27 +3,30 @@ package ch.brogrammers.carl.wififingerprinting;
 
 import android.net.wifi.ScanResult;
 
+import java.util.ArrayList;
+
 /**
  * Information about the anchor nodes. SSID is assumed to be unique.
  */
 public class AnchorNode {
     private final String ssid;
-    private int rssi;
+    private ArrayList<Integer> rssi;
 
     public AnchorNode(String ssid) {
         this.ssid = ssid;
+        rssi = new ArrayList<>();
     }
 
     public String getSsid() {
         return ssid;
     }
 
-    public int getRssi() {
-        return rssi;
+    public void addRssi(int rssi) {
+        this.rssi.add(rssi);
     }
 
-    public void setRssi(int rssi) {
-        this.rssi = rssi;
+    public ArrayList<Integer> getRssis(){
+        return rssi;
     }
 
     @Override
@@ -43,6 +46,10 @@ public class AnchorNode {
 
     @Override
     public String toString() {
-        return ssid + ": " + rssi ;
+        String allRssis = "";
+        for(int value :rssi){
+            allRssis = allRssis + " " + value;
+        }
+        return ssid + ": " + allRssis ;
     }
 }
