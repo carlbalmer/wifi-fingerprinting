@@ -50,7 +50,7 @@ public class ScanManager {
 
     @Override
     public String toString() {
-        String output = "";
+        String output = label + "\n";
         for(String key : anchorNodes.keySet()){
             output = output + anchorNodes.get(key) + "\n";
         }

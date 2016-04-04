@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private ScanManager scanManager;
 
     private Handler handler;
+    private Runnable scanRunner;
+    private boolean isScanRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,33 +38,34 @@ public class MainActivity extends AppCompatActivity {
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiScanReceiver = new WifiScanReceiver();
-        scanManager = new ScanManager(editText.getText().toString(), 5);
 
         handler = new Handler();
-
-        scanManager.addAnchorNode("Berntiger");
-        scanManager.addAnchorNode("UPC0048103");
-
-        final Runnable scanRepeater = new Runnable() {
-            @Override
-            public void run() {
-                if (!scanManager.enoughResults()) {
-                    wifiManager.startScan();
-                    handler.postDelayed(this, 3000);
-                } else {
-                    textView.setText(scanManager.getLabel());
-                    scanManager = new ScanManager(editText.getText().toString(), 5);
-                }
-            }
-        };
+        scanRunner = new ScanRunner();
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                handler.post(scanRepeater);
+                startScan();
             }
         });
+    }
 
+    private void startScan(){
+        if(!isScanRunning){
+            isScanRunning = true;
+            scanManager = new ScanManager(editText.getText().toString(), 5);
+            defineAnchorNodes();
+            handler.post(scanRunner);
+        }
+    }
+
+    private void defineAnchorNodes() {
+        scanManager.addAnchorNode("UPC0048103");
+    }
+
+    private void finishScan(){
+        textView.setText("Finished" + scanManager.toString());
+        isScanRunning = false;
     }
 
     protected void onPause() {
@@ -85,6 +88,19 @@ public class MainActivity extends AppCompatActivity {
             scanManager.addScanResults(wifiManager.getScanResults());
             textView.setText(scanManager.toString());
             button.setText("Scan Count: " + Integer.toString(scanManager.getScanCount()));
+        }
+    }
+
+    public class ScanRunner implements Runnable {
+        @Override
+        public void run() {
+            if (!scanManager.enoughResults()) {
+                wifiManager.startScan();
+                handler.postDelayed(this, 3000);
+            } else {
+                finishScan();
+                handler.removeCallbacks(this);
+            }
         }
     }
 }
