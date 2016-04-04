@@ -4,6 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,7 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
     private TextView textView;
     private Button button;
@@ -22,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
     private WifiManager wifiManager;
     private WifiScanReceiver wifiScanReceiver;
     private ScanManager scanManager;
+
+    private SensorManager sensorManager;
+    private Sensor magnetometer;
+    private SensorEvent magnetometerEvent;
 
     private Handler handler;
     private Runnable scanRunner;
@@ -38,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiScanReceiver = new WifiScanReceiver();
+
+        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         handler = new Handler();
         scanRunner = new ScanRunner();
@@ -66,18 +77,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void finishScan() {
         textView.setText(scanManager.toString());
-        button.setText("SCAN");
+        button.setText(R.string.button1);
         isScanRunning = false;
     }
 
     protected void onPause() {
         unregisterReceiver(wifiScanReceiver);
+        sensorManager.unregisterListener(this);
         super.onPause();
     }
 
     protected void onResume() {
         registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
         super.onResume();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        this.magnetometerEvent = event;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     /**
@@ -89,8 +112,9 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if (!scanManager.enoughResults()) {
                 scanManager.addScanResults(wifiManager.getScanResults());
+                scanManager.addMagnetometerValues(magnetometerEvent);
                 textView.setText(scanManager.toString());
-                button.setText("Scan Count: " + Integer.toString(scanManager.getScanCount()));
+                button.setText(getString(R.string.scanCount) + Integer.toString(scanManager.getScanCount()));
             }
         }
     }

@@ -1,5 +1,6 @@
 package ch.brogrammers.carl.wififingerprinting;
 
+import android.hardware.SensorEvent;
 import android.net.wifi.ScanResult;
 
 import java.util.ArrayList;
@@ -15,11 +16,13 @@ public class ScanManager {
     private final int numberOfScans;
     private Hashtable<String, AnchorNode> anchorNodes;
     private int scanCount;
+    private ArrayList<float[]> magneticFieldValues;
 
     public ScanManager(String label, int numberOfScans) {
         this.label = label;
         this.numberOfScans = numberOfScans;
         this.anchorNodes = new Hashtable<>();
+        this.magneticFieldValues = new ArrayList<>();
         this.scanCount = 0;
     }
 
@@ -33,11 +36,22 @@ public class ScanManager {
         scanCount++;
     }
 
-    public List<AnchorNode> getAverages() {
-        return calculateAverages();
+    private int[] calculateAverageMagnetometer(){
+        assert(!magneticFieldValues.isEmpty());
+        int[] avg = new int[3];
+        float[] sum = new float[3];
+        for (float[] value : magneticFieldValues){
+            for (int i=0; i<3; i++){
+                sum[i] += value[i];
+            }
+        }
+        for (int i=0; i<3; i++){
+            avg[i] = Math.round(sum[i]/magneticFieldValues.size());
+        }
+        return avg;
     }
 
-    private List<AnchorNode> calculateAverages() {
+    private List<AnchorNode> calculateAverageRssi() {
         List<AnchorNode> averages = new ArrayList<>();
         for (String key : anchorNodes.keySet()) {
             float avg = 0;
@@ -74,15 +88,21 @@ public class ScanManager {
     @Override
     public String toString() {
         String output = label;
-        if (!enoughResults()){
+        if (!enoughResults()) {
             for (String key : anchorNodes.keySet()) {
                 output += "\n" + anchorNodes.get(key).toString();
             }
-        }else{
+            output += "\nX-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[0]
+                    + "\nY-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[1]
+                    + "\nZ-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[2];
+        } else {
             output += " Averages";
-            for (AnchorNode node : getAverages()){
+            for (AnchorNode node : calculateAverageRssi()) {
                 output += "\n" + node.toString();
             }
+            output += "\nX-Axis:" + calculateAverageMagnetometer()[0]
+                    + "\nY-Axis:" + calculateAverageMagnetometer()[1]
+                    + "\nZ-Axis:" + calculateAverageMagnetometer()[2];
         }
         return output;
     }
@@ -93,5 +113,9 @@ public class ScanManager {
 
     public String getLabel() {
         return label;
+    }
+
+    public void addMagnetometerValues(SensorEvent magnetometerEvent) {
+        this.magneticFieldValues.add(magnetometerEvent.values);
     }
 }
