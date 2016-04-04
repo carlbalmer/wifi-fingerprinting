@@ -1,8 +1,6 @@
 package ch.brogrammers.carl.wififingerprinting;
 
 
-import android.net.wifi.ScanResult;
-
 import java.util.ArrayList;
 
 /**

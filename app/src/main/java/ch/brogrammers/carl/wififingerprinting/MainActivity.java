@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void startScan(){
-        if(!isScanRunning){
+    private void startScan() {
+        if (!isScanRunning) {
             isScanRunning = true;
             scanManager = new ScanManager(editText.getText().toString(), 5);
             defineAnchorNodes();
@@ -61,10 +61,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void defineAnchorNodes() {
         scanManager.addAnchorNode("UPC0048103");
+        scanManager.addAnchorNode("UPC0048104");
     }
 
-    private void finishScan(){
-        textView.setText("Finished" + scanManager.toString());
+    private void finishScan() {
+        textView.setText(scanManager.toString());
+        button.setText("SCAN");
         isScanRunning = false;
     }
 
@@ -85,9 +87,11 @@ public class MainActivity extends AppCompatActivity {
     public class WifiScanReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            scanManager.addScanResults(wifiManager.getScanResults());
-            textView.setText(scanManager.toString());
-            button.setText("Scan Count: " + Integer.toString(scanManager.getScanCount()));
+            if (!scanManager.enoughResults()) {
+                scanManager.addScanResults(wifiManager.getScanResults());
+                textView.setText(scanManager.toString());
+                button.setText("Scan Count: " + Integer.toString(scanManager.getScanCount()));
+            }
         }
     }
 

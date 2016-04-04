@@ -11,9 +11,9 @@ import java.util.List;
  */
 public class ScanManager {
 
-    private Hashtable<String, AnchorNode> anchorNodes;
     private final String label;
     private final int numberOfScans;
+    private Hashtable<String, AnchorNode> anchorNodes;
     private int scanCount;
 
     public ScanManager(String label, int numberOfScans) {
@@ -23,20 +23,43 @@ public class ScanManager {
         this.scanCount = 0;
     }
 
-    public void addScanResults(List<ScanResult> scanResults){
-        for(ScanResult scanResult : scanResults){
-            if(anchorNodes.containsKey(scanResult.SSID)){
+    public void addScanResults(List<ScanResult> scanResults) {
+        assert !enoughResults();
+        for (ScanResult scanResult : scanResults) {
+            if (anchorNodes.containsKey(scanResult.SSID)) {
                 anchorNodes.get(scanResult.SSID).addRssi(scanResult.level);
             }
         }
         scanCount++;
     }
 
-    public void addAnchorNode(String ssid){
+    public List<AnchorNode> getAverages() {
+        return calculateAverages();
+    }
+
+    private List<AnchorNode> calculateAverages() {
+        List<AnchorNode> averages = new ArrayList<>();
+        for (String key : anchorNodes.keySet()) {
+            float avg = 0;
+            if (!anchorNodes.get(key).getRssis().isEmpty()) {
+                for (Integer rssi : anchorNodes.get(key).getRssis()) {
+                    avg += rssi;
+                }
+                avg = Math.round(avg / anchorNodes.get(key).getRssis().size());
+            }
+            AnchorNode node = new AnchorNode(key);
+            node.addRssi((int) avg);
+            averages.add(node);
+        }
+
+        return averages;
+    }
+
+    public void addAnchorNode(String ssid) {
         anchorNodes.put(ssid, new AnchorNode(ssid));
     }
 
-    public void removeAnchorNode(String ssid){
+    public void removeAnchorNode(String ssid) {
         anchorNodes.remove(ssid);
     }
 
@@ -50,14 +73,21 @@ public class ScanManager {
 
     @Override
     public String toString() {
-        String output = label + "\n";
-        for(String key : anchorNodes.keySet()){
-            output = output + anchorNodes.get(key) + "\n";
+        String output = label;
+        if (!enoughResults()){
+            for (String key : anchorNodes.keySet()) {
+                output += "\n" + anchorNodes.get(key).toString();
+            }
+        }else{
+            output += " Averages";
+            for (AnchorNode node : getAverages()){
+                output += "\n" + node.toString();
+            }
         }
         return output;
     }
 
-    public boolean enoughResults(){
+    public boolean enoughResults() {
         return scanCount >= numberOfScans;
     }
 
