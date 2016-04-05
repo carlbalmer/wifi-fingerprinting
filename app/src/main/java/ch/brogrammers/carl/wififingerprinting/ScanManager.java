@@ -36,22 +36,22 @@ public class ScanManager {
         scanCount++;
     }
 
-    private int[] calculateAverageMagnetometer(){
-        assert(!magneticFieldValues.isEmpty());
+    public int[] calculateAverageMagnetometer() {
+        assert (!magneticFieldValues.isEmpty());
         int[] avg = new int[3];
         float[] sum = new float[3];
-        for (float[] value : magneticFieldValues){
-            for (int i=0; i<3; i++){
+        for (float[] value : magneticFieldValues) {
+            for (int i = 0; i < 3; i++) {
                 sum[i] += value[i];
             }
         }
-        for (int i=0; i<3; i++){
-            avg[i] = Math.round(sum[i]/magneticFieldValues.size());
+        for (int i = 0; i < 3; i++) {
+            avg[i] = Math.round(sum[i] / magneticFieldValues.size());
         }
         return avg;
     }
 
-    private List<AnchorNode> calculateAverageRssi() {
+    public List<AnchorNode> calculateAverageRssi() {
         List<AnchorNode> averages = new ArrayList<>();
         for (String key : anchorNodes.keySet()) {
             float avg = 0;
@@ -77,33 +77,36 @@ public class ScanManager {
         anchorNodes.remove(ssid);
     }
 
-    public AnchorNode getAnchorNode(String ssid) {
-        return anchorNodes.get(ssid);
+    public Hashtable<String, AnchorNode> getAnchorNodes() {
+        return anchorNodes;
     }
 
     public int getScanCount() {
         return scanCount;
     }
 
+    public String averagesToString() {
+        String output = label;
+        output += " Averages";
+        for (AnchorNode node : calculateAverageRssi()) {
+            output += "\n" + node.toString();
+        }
+        output += "\nX-Axis:" + calculateAverageMagnetometer()[0]
+                + "\nY-Axis:" + calculateAverageMagnetometer()[1]
+                + "\nZ-Axis:" + calculateAverageMagnetometer()[2];
+        return output;
+    }
+
     @Override
     public String toString() {
         String output = label;
-        if (!enoughResults()) {
-            for (String key : anchorNodes.keySet()) {
-                output += "\n" + anchorNodes.get(key).toString();
-            }
-            output += "\nX-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[0]
-                    + "\nY-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[1]
-                    + "\nZ-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[2];
-        } else {
-            output += " Averages";
-            for (AnchorNode node : calculateAverageRssi()) {
-                output += "\n" + node.toString();
-            }
-            output += "\nX-Axis:" + calculateAverageMagnetometer()[0]
-                    + "\nY-Axis:" + calculateAverageMagnetometer()[1]
-                    + "\nZ-Axis:" + calculateAverageMagnetometer()[2];
+
+        for (String key : anchorNodes.keySet()) {
+            output += "\n" + anchorNodes.get(key).toString();
         }
+        output += "\nX-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[0]
+                + "\nY-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[1]
+                + "\nZ-Axis:" + magneticFieldValues.get(magneticFieldValues.size() - 1)[2];
         return output;
     }
 
@@ -117,5 +120,9 @@ public class ScanManager {
 
     public void addMagnetometerValues(SensorEvent magnetometerEvent) {
         this.magneticFieldValues.add(magnetometerEvent.values);
+    }
+
+    public ArrayList<float[]> getMagneticFieldValues() {
+        return magneticFieldValues;
     }
 }

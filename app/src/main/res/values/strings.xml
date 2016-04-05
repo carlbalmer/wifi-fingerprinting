@@ -3,4 +3,5 @@
     <string name="textView1">Hello!</string>
     <string name="button1">Scan</string>
     <string name="scanCount">"Scan Count: "</string>
+    <string name="label">Label</string>
 </resources>

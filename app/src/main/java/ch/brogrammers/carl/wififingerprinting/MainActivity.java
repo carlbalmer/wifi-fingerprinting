@@ -64,19 +64,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void startScan() {
         if (!isScanRunning) {
             isScanRunning = true;
-            scanManager = new ScanManager(editText.getText().toString(), 5);
+            scanManager = new ScanManager(editText.getText().toString(), 20);
             defineAnchorNodes();
             handler.post(scanRunner);
         }
     }
 
     private void defineAnchorNodes() {
-        scanManager.addAnchorNode("UPC0048103");
-        scanManager.addAnchorNode("UPC0048104");
+        //scanManager.addAnchorNode("UPC0048103");
+        scanManager.addAnchorNode("eduroam");
     }
 
     private void finishScan() {
-        textView.setText(scanManager.toString());
+        textView.setText(scanManager.averagesToString());
+        FileSaver.save(this, scanManager, "probing.csv");
         button.setText(R.string.button1);
         isScanRunning = false;
     }

@@ -32,6 +32,5 @@
         android:layout_below="@+id/button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="41dp"
-        android:autoText="false"
-        android:text="Label" />
+        android:text="@string/label" />
 </RelativeLayout>
