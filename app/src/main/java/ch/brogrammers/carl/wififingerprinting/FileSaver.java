@@ -16,6 +16,7 @@ public class FileSaver {
 
     public static void save(Context c, ScanManager scanManager, String filename) {
         saveAverages(c, scanManager, filename);
+        saveLibrary(c, scanManager, filename);
         saveRaw(c, scanManager, filename);
     }
 
@@ -53,22 +54,48 @@ public class FileSaver {
     public static void saveAverages(Context c, ScanManager scanManager, String filename) {
         assert isExternalStorageWritable();
         File file = new File(c.getExternalFilesDir(null), "averages" + filename);
+        String line = scanManager.getLabel();
         for (AnchorNode anchorNode : scanManager.calculateAverageRssi()) {
-            String line = scanManager.getLabel();
-            line += "," + anchorNode.getSsid();
+            line += " " + anchorNode.getSsid() + ":";
             for (int value : anchorNode.getRssis()) {
-                line += "," + value;
+                line += value;
             }
-            line += "\n";
-            writeLineToFile(line, file);
         }
         //saves the Magnetometer as separate lines
-        String xAxis = scanManager.getLabel() + ",X-Axis" + "," + scanManager.calculateAverageMagnetometer()[0] + "\n";
-        String yAxis = scanManager.getLabel() + ",Y-Axis" + "," + scanManager.calculateAverageMagnetometer()[1] + "\n";
-        String zAxis = scanManager.getLabel() + ",Z-Axis" + "," + scanManager.calculateAverageMagnetometer()[2] + "\n";
-        writeLineToFile(xAxis, file);
-        writeLineToFile(yAxis, file);
-        writeLineToFile(zAxis, file);
+        line += " X-Axis" + ":" + scanManager.calculateAverageMagnetometer()[0];
+        line += " Y-Axis" + ":" + scanManager.calculateAverageMagnetometer()[1];
+        line += " Z-Axis" + ":" + scanManager.calculateAverageMagnetometer()[2];
+        line += "\n";
+        writeLineToFile(line, file);
+
+    }
+
+    /**
+     * Saves the averages of a scan into a format that is readable by the LIBSVM library.
+     * @param c Context from MainActivity
+     * @param scanManager the ScanManager to be saved
+     * @param filename Name of the file
+     */
+    public static void saveLibrary(Context c, ScanManager scanManager, String filename) {
+        assert isExternalStorageWritable();
+        File file = new File(c.getExternalFilesDir(null), "library" + filename);
+        String line = scanManager.getLabel();
+        int index = 1;
+        for (AnchorNode anchorNode : scanManager.calculateAverageRssi()) {
+            line += " " + index + ":";
+            for (int value : anchorNode.getRssis()) {
+                line += value;
+            }
+            index++;
+        }
+        //saves the Magnetometer as separate lines
+        line += " " + index + ":" + scanManager.calculateAverageMagnetometer()[0];
+        index++;
+        line += " " + index + ":" + scanManager.calculateAverageMagnetometer()[1];
+        index++;
+        line += " " + index + ":" + scanManager.calculateAverageMagnetometer()[2];
+        line += "\n";
+        writeLineToFile(line, file);
 
     }
 

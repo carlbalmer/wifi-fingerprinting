@@ -64,20 +64,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void startScan() {
         if (!isScanRunning) {
             isScanRunning = true;
-            scanManager = new ScanManager(editText.getText().toString(), 20);
+            scanManager = new ScanManager(editText.getText().toString(), 8);
             defineAnchorNodes();
             handler.post(scanRunner);
         }
     }
 
     private void defineAnchorNodes() {
-        //scanManager.addAnchorNode("UPC0048103");
-        scanManager.addAnchorNode("eduroam");
+        scanManager.addAnchorNode("UPC0048103");
+        scanManager.addAnchorNode("NETGEAR31");
+        scanManager.addAnchorNode("devolo-000B3B9BC9A9");
+        scanManager.addAnchorNode("489-652");
+        scanManager.addAnchorNode("Beatevents_WLAN");
+        scanManager.addAnchorNode("Berntiger");
+        scanManager.addAnchorNode("TP-LINK_BCC3A8");
     }
 
     private void finishScan() {
         textView.setText(scanManager.averagesToString());
-        FileSaver.save(this, scanManager, "probing.csv");
+        FileSaver.save(this, scanManager, "testingDoors.csv");
         button.setText(R.string.button1);
         isScanRunning = false;
     }
@@ -125,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             if (!scanManager.enoughResults()) {
                 wifiManager.startScan();
-                handler.postDelayed(this, 3000);
+                handler.postDelayed(this, 2000);
             } else {
                 finishScan();
                 handler.removeCallbacks(this);
