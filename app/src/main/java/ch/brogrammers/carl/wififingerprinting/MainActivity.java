@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiScanReceiver = new WifiScanReceiver();
 
+        scanManager = new ScanManager(editText.getText().toString(), 8);
+
         sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
@@ -78,11 +80,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         scanManager.addAnchorNode("Beatevents_WLAN");
         scanManager.addAnchorNode("Berntiger");
         scanManager.addAnchorNode("TP-LINK_BCC3A8");
+        scanManager.addAnchorNode("eduroam");
     }
 
     private void finishScan() {
         textView.setText(scanManager.averagesToString());
-        FileSaver.save(this, scanManager, "testingDoors.csv");
+        FileSaver.save(this, scanManager, "testing.csv");
         button.setText(R.string.button1);
         isScanRunning = false;
     }
@@ -130,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             if (!scanManager.enoughResults()) {
                 wifiManager.startScan();
-                handler.postDelayed(this, 2000);
+                handler.postDelayed(this, 3000);
             } else {
                 finishScan();
                 handler.removeCallbacks(this);

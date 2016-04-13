@@ -28,12 +28,22 @@ public class ScanManager {
 
     public void addScanResults(List<ScanResult> scanResults) {
         assert !enoughResults();
-        for (ScanResult scanResult : scanResults) {
-            if (anchorNodes.containsKey(scanResult.SSID)) {
-                anchorNodes.get(scanResult.SSID).addRssi(scanResult.level);
+        if (!enoughResults()) {
+            for (ScanResult scanResult : scanResults) {
+                if (anchorNodes.containsKey(scanResult.SSID)) {
+                    anchorNodes.get(scanResult.SSID).addRssi(scanResult.level);
+                }
+            }
+            scanCount++;
+            for (String key : anchorNodes.keySet()){
+                while (anchorNodes.get(key).getRssis().size()< scanCount){
+                    anchorNodes.get(key).getRssis().add(-100);
+                }
+                while (anchorNodes.get(key).getRssis().size()> scanCount){
+                    anchorNodes.get(key).getRssis().remove(anchorNodes.get(key).getRssis().size()-1);
+                }
             }
         }
-        scanCount++;
     }
 
     public int[] calculateAverageMagnetometer() {
@@ -120,6 +130,10 @@ public class ScanManager {
 
     public void addMagnetometerValues(SensorEvent magnetometerEvent) {
         this.magneticFieldValues.add(magnetometerEvent.values);
+    }
+
+    public int getNumberOfScans() {
+        return numberOfScans;
     }
 
     public ArrayList<float[]> getMagneticFieldValues() {
