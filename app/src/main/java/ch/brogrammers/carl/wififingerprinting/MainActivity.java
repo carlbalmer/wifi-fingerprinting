@@ -73,19 +73,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void defineAnchorNodes() {
-        scanManager.addAnchorNode("UPC0048103");
-        scanManager.addAnchorNode("NETGEAR31");
-        scanManager.addAnchorNode("devolo-000B3B9BC9A9");
-        scanManager.addAnchorNode("489-652");
-        scanManager.addAnchorNode("Beatevents_WLAN");
-        scanManager.addAnchorNode("Berntiger");
-        scanManager.addAnchorNode("TP-LINK_BCC3A8");
-        scanManager.addAnchorNode("eduroam");
+        scanManager.addAnchorNode("ap1");
+        scanManager.addAnchorNode("ap2");
+        scanManager.addAnchorNode("ap3");
+        scanManager.addAnchorNode("ap4");
+        scanManager.addAnchorNode("ap5");
+        //scanManager.addAnchorNode("Berntiger");
+        //scanManager.addAnchorNode("TP-LINK_BCC3A8");
+        //scanManager.addAnchorNode("eduroam");
     }
 
     private void finishScan() {
         textView.setText(scanManager.averagesToString());
-        FileSaver.save(this, scanManager, "testing.csv");
+        FileSaver.save(this, scanManager, "BordersUni2.csv");
         button.setText(R.string.button1);
         isScanRunning = false;
     }
